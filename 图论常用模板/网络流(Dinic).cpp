@@ -17,9 +17,9 @@ template<class A, class ...B>
 void read(A& a, B&...b) { read(a); read(b...); }
 //------------------------------------------------------------
 /*
-* 网络流Dinic O(EV)
+* 缃戠粶娴丏inic O(EV)
 */
-const int maxn = 1e5 + 11;//最大顶点数
+const int maxn = 1e5 + 11;//鏈�澶ц妭鐐规暟
 struct edge {
 	int from, to, rev;
 	ll cap;
