@@ -51,7 +51,7 @@ namespace TT {
 			for (int p = i << 1, j = 0; j < n; j += p)
 			{
 				E w(1, 0);
-				for (int k = 0; k < i; k++, w =w* wn)
+				for (int k = 0; k < i; k++, w *= wn)
 				{
 					E x = a[j + k], y = w * a[j + k + i];
 					a[j + k] = x + y; a[j + k + i] = x - y;
@@ -80,7 +80,7 @@ int main()
 	n = modi;
 	TT::init(n, m);
 	TT::fft(a, 1), TT::fft(b, 1);
-	for (int i = 0; i <= n; ++i) a[i] = a[i] * b[i];
+	for (int i = 0; i <= n; ++i) a[i]*=b[i];
 	TT::fft(a, -1);
 	//for (int i = 0; i < 31; ++i) if (((int)(a[i + 2 * modi].real() / n + 0.5)) > 0) cout << i << " ";
 	//cout << endl;
