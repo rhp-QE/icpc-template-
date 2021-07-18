@@ -18,30 +18,18 @@ template<class A>void read(A& a) {
 template<class A, class ...B>
 void read(A& a, B&...b) { read(a); read(b...); }
 //------------------------------------------------------------
+/*
+https://ac.nowcoder.com/acm/contest/11166#question   H 题
+*/
 const int maxn = 2e6 + 233;
 #define DB double
 #define pi acos(-1)
-struct Complex {
-	double x, y;
-	Complex operator + (const Complex& t)const {
-		return { x + t.x , y + t.y };
-	}
-	Complex operator - (const Complex& t)const {
-		return { x - t.x, y - t.y };
-	}
-	Complex operator * (const Complex& t)const {
-		return { x * t.x - y * t.y , x * t.y + y * t.x };
-	}
-	Complex() :x(0), y(0){}
-	Complex(double x): x(x){}
-	Complex(double x,double y) :x(x),y(y){}
-	
-};
 typedef complex<double> E;
 
 E a[maxn], b[maxn];
 int n, m;
-
+//n,m 分别表示两多项式的最高次
+//经过init() 后 m表示两式相乘后的最高次。n为2的幂次，且大于m
 namespace TT {
 	
 	int n, m, L;
