@@ -1,1 +1,54 @@
+//快速幂  log(n)
+ll pw_md(ll x, ll n, ll p) {
+	ll ans = 1;
+	while (n > 0) {
+		if (n & 1) ans *= x;
+		x *= x;
+		ans %= md; x %= md;
+		n >>= 1;
+	}
+	return ans;
+}
+
+//扩展欧几里得 log(min(a,b))
+//求整数 x,y 使得 ax+by=d, 且 |x|+|y| 最小。其中d=gcd(a,b);
+ll gcd(ll a, ll b) { return b == 0 ? a : gcd(b, a % b); }
+void exgcd(ll a, ll b, ll& d, ll& x, ll& y) {
+	if (!b) { d = a; x = 1; y = 0; }
+	else {
+		exgcd(b, a % b, d, y, x);
+		y -= x * (a / b);
+	}
+}
+
+
+//乘法逆  
+//扩展欧几里得求逆  要求 a p 互素
+ll inv(ll a, ll p) {
+	ll d, x, y;
+	exgcd(a, p, d, x, y);
+	return d == 1 ? (x + p) % p : -1;
+}
+
+//费马小定理求逆， 要求 p 为素
+pw_md(a, p - 2, p);
+
+
+//线性求逆  求 1~n 所有元素的逆元  o(n)
+void get_inv(int n, ll p) {
+	inv[1] = 1;
+	for (int i = 2; i <= n; ++i) {
+		inv[i] = (-p / i + p) * inv[p % i] % p;
+	}
+}
+
+
+//线性求任意n个数的逆元  o(n+logp)
+s[0] = 1;  //前缀积
+for (int i = 1; i <= n; ++i) s[i] = s[i - 1] * a[i] % p;
+sv[n] = qpow(s[n], p - 2);  //前缀积的逆元
+for (int i = n; i >= 1; --i) sv[i - 1] = sv[i] * a[i] % p;
+for (int i = 1; i <= n; ++i) inv[i] = sv[i] * s[i - 1] % p; //单个元素的逆元
+
+
 
