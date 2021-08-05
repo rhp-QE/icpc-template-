@@ -51,4 +51,76 @@ for (int i = n; i >= 1; --i) sv[i - 1] = sv[i] * a[i] % p;
 for (int i = 1; i <= n; ++i) inv[i] = sv[i] * s[i - 1] % p; //单个元素的逆元
 
 
+//线性筛  O(n)
+const int maxn = 1e5 + 11;
+int prim[maxn], phi[maxn], mu[maxn];
+//质数  欧拉函数  莫比乌斯函数
+bool is[maxn];
+int pre(int n) {
+	int cnt = 0;//素数个数
+	mem(is, -1);//  true  是素数 ，
+	is[1] = is[0] = false;
+	mu[1] = 1;
+	rep(i, 2, n) {
+		if (is[i]) {
+			prim[cnt++] = i; phi[i] = i - 1; mu[i] = -1;
+		}
+		for (int j = 0; j < cnt && prim[j] * i <= n; ++j) {
+			is[i * prim[j]] = false;
+			if (i % prim[j]) {//互质
+				phi[i * prim[j]] = phi[i] * phi[prim[j]];
+				mu[i * prim[j]] = -mu[i];
+			}
+			else {
+				phi[i * prim[j]] = phi[i] * prim[j];
+				mu[i * prim[j]] = 0;
+				break;
+			}
+		}
+	}
+	return cnt;
+}
 
+//素性测试  根号n
+bool is_prim(int n) {
+	for (int i = 2; i * i <= n; ++i) {
+		if (!(n % i))  return 0;
+	}
+	return n != 1;
+}
+
+//约数枚举  根号n
+vector<int> divisor(int n) {
+	vector<int> res;
+	for (int i = 1; i * i <= n; ++i) {
+		if (n % i == 0) {
+			res.push_back(i);
+			if (i != n / i)  res.push_back(n / i);
+		}
+	}
+	return res;
+}
+
+//整数分解 根号n
+map<int, int> prime_factor(int n) {
+	map<int, int> res;
+	for (int i = 2; i * i <= n; ++i) {
+		while (n % i == 0) {
+			++res[i];
+			n /= i;
+		}
+	}
+	if (n != 1)  ++res[n];
+	return res;
+}
+
+//求单个欧拉函数  根号n
+int euler_phi(int n) {
+	int ans = n;
+	for (int i = 2; i * i <= n; ++i) if (n % i == 0) {
+		ans = ans * (i - 1) / i;
+		while (n % i == 0) n /= i;
+	}
+	if (n != 1) ans = ans * (i - 1) / i;
+	return ans;
+}
