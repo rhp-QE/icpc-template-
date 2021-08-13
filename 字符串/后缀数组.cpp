@@ -1,62 +1,63 @@
-
-#include<bits/stdc++.h>
-#define lowbit(x) x&(-x)
-#define l(o) (o<<1)
-#define r(o) (o<<1)|1
-#define rep(i,a,b) for(int i=a;i<=b;i++)
-#define rrep(i,a,b) for(int i=a;i>=b;--i)
-#define mem(a,b) memset(a,b,sizeof(a))
-#define inf 1LL<<60
-typedef long long ll;
-using namespace std;
-template<class A>void read(A& a) {
-	a = 0; int c = getchar(), f = 0;
-	for (; !isdigit(c); c = getchar()) f |= c == '-';
-	for (; isdigit(c); c = getchar()) a = a * 10 + (c ^ 48);
-	if (f) a = -a;
+//æ˜¯é€šè¿‡å¤„ç†   æ–‡æœ¬ä¸²   çš„   å¤šæ¨¡æ¿   åŒ¹é…ç®—æ³•
+//sa[i]  è¡¨ç¤ºæ’åä¸ºiçš„åç¼€ï¼ˆs+sa[i]ï¼‰
+//æ±‚å‡º sa[i] åå°±å¯ä»¥é€šè¿‡äºŒåˆ†çš„æ–¹æ³•åœ¨æ–‡æœ¬ä¸²ä¸­æŸ¥æ‰¾ æ¨¡æ¿ä¸²ã€‚
+//åç¼€æ’åºåï¼Œæ¨¡æ¿ä¸²åœ¨åç¼€ä¸­ æ˜¯èšé›†çš„ï¼Œå› æ­¤ç”¨äºŒåˆ†æ³•æ±‚ä¸Šä¸‹ç•Œå³å¯
+//æ’åä¸ºã€L , R) çš„åç¼€  ï¼Œå³ä¸ºåŒ¹é…ä½ç½®
+const int N = 2e5+11;//
+char s[N]; int n;//æ–‡æœ¬ä¸²é•¿åº¦
+namespace FA {
+    int sa[N], rk[N], oldrk[N << 1], id[N], px[N], cnt[N];
+    bool cmp(int x, int y, int w) {
+        return oldrk[x] == oldrk[y] && oldrk[x + w] == oldrk[y + w];
+    }
+    void build(int m) {
+        int i, p, w;
+        for (i = 1; i <= n; ++i) ++cnt[rk[i] = s[i]];
+        for (i = 1; i <= m; ++i) cnt[i] += cnt[i - 1];
+        for (i = n; i >= 1; --i) sa[cnt[rk[i]]--] = i;
+        for (w = 1;; w <<= 1, m = p) {  // m=p å°±æ˜¯ä¼˜åŒ–è®¡æ•°æ’åºå€¼åŸŸ
+            for (p = 0, i = n; i > n - w; --i) id[++p] = i;
+            for (i = 1; i <= n; ++i)
+                if (sa[i] > w) id[++p] = sa[i] - w;
+            memset(cnt, 0, sizeof(cnt));
+            for (i = 1; i <= n; ++i) ++cnt[px[i] = rk[id[i]]];
+            for (i = 1; i <= m; ++i) cnt[i] += cnt[i - 1];
+            for (i = n; i >= 1; --i) sa[cnt[px[i]]--] = id[i];
+            memcpy(oldrk, rk, sizeof(rk));
+            for (p = 0, i = 1; i <= n; ++i)
+                rk[sa[i]] = cmp(sa[i], sa[i - 1], w) ? p : ++p;
+            if (p == n) {
+                for (int i = 1; i <= n; ++i) sa[rk[i]] = i;
+                break;
+            }
+        }
+    }
 }
-template<class A, class ...B>
-void read(A& a, B&...b) { read(a); read(b...); }
-//------------------------------------------------------------
-const int maxn = 1e5 + 11;
-char s[maxn];
-int sa[maxn], t[maxn], t2[maxn], c[maxn], n;
-/*
-* sa[i]: ÅÅÃûÎªiµÄºó×º
-* ÓĞÁËsaÊı×éÒÔºó¾Í¿ÉÒÔÓÃ¶ş·Ö·¨²éÕÒ×Ö·û´®
-* saµÄ¼ÆËã  nlogn
-* Ã¿´Î²éÕÒ  mlogn   nÊÇÎÄ±¾´®£¬mÊÇÄ£°å´®
-* ¶ÔÓÚÎÄ±¾´®ºÜ³¤£¬Ä£°å´®¶ÌµÄÎÊÌâ£¬Ğ§ÂÊ»áÏÔÖøÌá¸ß
-*/
-void build_sa(int m) {
-	//ËùÓĞ×Ö·ûµÄÈ¡Öµ·¶Î§ÔÚ 0~m-1 Ö®¼ä
-	//±ØÒªÊ±¹¹½¨×Ö·ûµ½Êı×Ö¼äµÄÒ»¶ÔÒ»Ó³Éä
-	int i, * x = t, * y = t2;
-	rep(i, 0, m - 1) c[i] = 0;
-	rep(i, 0, n - 1) c[x[i] = s[i]]++;
-	rep(i, 1, m - 1) c[i] += c[i - 1];
-	rrep(i, n - 1, 0) sa[--c[x[i]]] = i;
-	for (int k = 1; k <= n; k <<= 1) {
-		int p = 0;
-		rep(i, n - k, n - 1) y[p++] = i;
-		rep(i, 0, n - 1) if (sa[i] >= k) y[p++] = sa[i] - k;
-		rep(i, 0, m - 1) c[i] = 0;
-		rep(i, 0, n - 1)  c[x[y[i]]]++;
-		rep(i, 1, m - 1) c[i] += c[i - 1];
-		rrep(i, n - 1, 0) sa[--c[x[y[i]]]] = y[i];
-		swap(x, y);
-		p = 1; x[sa[0]] = 0;
-		rep(i, 1, n - 1)
-			x[sa[i]] = y[sa[i - 1]] == y[sa[i]] && y[sa[i - 1] + k] == y[sa[i] + k] ? p - 1 : p++;
-		if (p >= n) break;
-		m = p;
-	}
+int m;  char pat[33];//æ¨¡æ¿ä¸²é•¿åº¦
+int cmp_suffix(char* pat, int p) {
+    return strncmp(pat, s + FA::sa[p], m);
 }
-
-int main() {
-	scanf("%s", s);n = strlen(s);
-	build_sa(256);
-	
-	rep(i, 0, n - 1) cout << sa[i] << endl;
-
+int find_l(char* p) {
+    m = strlen(p);
+    if (cmp_suffix(p, 1) < 0)  return -1;
+    if (cmp_suffix(p, n) > 0) return -1;
+    int l = 1, r = n + 1;
+    while (r > l) {
+        int M = l + ((r - l) >> 1);
+        if (cmp_suffix(p, M) <= 0) r = M;
+        else l = M + 1;
+    }
+    return r;
+}
+int find_r(char* p) {
+    m = strlen(p);
+    if (cmp_suffix(p, 1) < 0)  return -1;
+    if (cmp_suffix(p, n) > 0) return -1;
+    int l = 1, r = n + 1;
+    while (r > l) {
+        int M = l + ((r - l) >> 1);
+        if (cmp_suffix(p, M) < 0) r = M;
+        else l = M + 1;
+    }
+    return r;
 }
