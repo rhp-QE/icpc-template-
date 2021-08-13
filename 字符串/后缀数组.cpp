@@ -1,9 +1,11 @@
+#include<iostream>
+using namespace::std;
 //是通过处理   文本串   的   多模板   匹配算法
 //sa[i]  表示排名为i的后缀（s+sa[i]）
 //求出 sa[i] 后就可以通过二分的方法在文本串中查找 模板串。
 //后缀排序后，模板串在后缀中 是聚集的，因此用二分法求上下界即可
 //排名为【L , R) 的后缀  ，即为匹配位置
-const int N = 2e5+11;//
+const int N = 2e5 + 11;//
 char s[N]; int n;//文本串长度
 namespace SA {
     int sa[N], rk[N], oldrk[N << 1], id[N], px[N], cnt[N];
@@ -37,19 +39,7 @@ int m;  char pat[33];//模板串长度
 int cmp_suffix(char* pat, int p) {
     return strncmp(pat, s + SA::sa[p], m);
 }
-int find_l(char* p) {
-    m = strlen(p);
-    if (cmp_suffix(p, 1) < 0)  return -1;
-    if (cmp_suffix(p, n) > 0) return -1;
-    int l = 1, r = n + 1;
-    while (r > l) {
-        int M = l + ((r - l) >> 1);
-        if (cmp_suffix(p, M) <= 0) r = M;
-        else l = M + 1;
-    }
-    return r;
-}
-int find_r(char* p) {
+int find_l_r(char* p,int k) {
     m = strlen(p);
     if (cmp_suffix(p, 1) < 0)  return -1;
     if (cmp_suffix(p, n) > 0) return -1;
@@ -57,7 +47,11 @@ int find_r(char* p) {
     while (r > l) {
         int M = l + ((r - l) >> 1);
         if (cmp_suffix(p, M) < 0) r = M;
-        else l = M + 1;
+        else if (cmp_suffix(p, M) > 0) l = M + 1;
+        else {
+            if (k == 0)  r = M;
+            else l = M + 1;
+        }
     }
     return r;
 }
