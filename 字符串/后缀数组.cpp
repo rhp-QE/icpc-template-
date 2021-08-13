@@ -5,7 +5,7 @@
 //排名为【L , R) 的后缀  ，即为匹配位置
 const int N = 2e5+11;//
 char s[N]; int n;//文本串长度
-namespace FA {
+namespace SA {
     int sa[N], rk[N], oldrk[N << 1], id[N], px[N], cnt[N];
     bool cmp(int x, int y, int w) {
         return oldrk[x] == oldrk[y] && oldrk[x + w] == oldrk[y + w];
@@ -35,7 +35,7 @@ namespace FA {
 }
 int m;  char pat[33];//模板串长度
 int cmp_suffix(char* pat, int p) {
-    return strncmp(pat, s + FA::sa[p], m);
+    return strncmp(pat, s + SA::sa[p], m);
 }
 int find_l(char* p) {
     m = strlen(p);
