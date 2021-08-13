@@ -1,0 +1,94 @@
+
+#include<iostream>
+#include<vector>
+#include<queue>
+#include<cstring>
+#include<algorithm>
+#include<unordered_map>
+#include<unordered_set>
+#define lowbit(x) x&(-x)
+#define l(o) (o<<1)
+#define r(o) (o<<1)|1
+using namespace std;
+#define rep(i,a,b) for(int i=a;i<=b;i++)
+#define _rep(i,a,b) for(int i=a;i>=b;--i)
+#define mem(a,b) memset(a,b,sizeof(a))
+#define inf 1LL<<60
+typedef long long ll;
+template<class A>void read(A& a) {
+    a = 0; int c = getchar(), f = 0;
+    for (; !isdigit(c); c = getchar()) f |= c == '-';
+    for (; isdigit(c); c = getchar()) a = a * 10 + (c ^ 48);
+    if (f) a = -a;
+}
+template<class A, class ...B>
+void read(A& a, B&...b) { read(a); read(b...); }
+//---------------------------------------------------------------------
+const int SIGMA_SIZE = 26;
+const int N = 1e5 + 11;//  模板串个数上限
+namespace AC {
+    const int SZ = N * 40;//字典树节点个数上限
+    int tot, tr[SZ][SIGMA_SIZE];
+    //失陪边  ，节点对应的模板串编号   ，节点引用次数   ，后缀链接
+    int fail[SZ], idx[SZ], last[SZ], val[SZ];
+    int cnt[N];  vector<int> pos[N];  //第 i 个字符串出现的次数及位置
+    void init() {
+        mem(fail, 0); mem(tr, 0);
+        mem(val, 0);  mem(cnt, 0);
+        mem(idx, 0);  tot = 0;
+        mem(last, 0);
+    }
+    void insert(char* pat, int id) {//模板串  及其  编号
+        pos[id].clear();
+        int u = 0;
+        for (int i = 1; pat[i]; ++i) {
+            if (!tr[u][pat[i] - 'a']) tr[u][pat[i] - 'a'] = ++tot;
+            u = tr[u][pat[i] - 'a'];
+        }
+        idx[u] = id;
+    }
+    //沿着失配边往回走时
+    //假设 路过的节点 为  v0  v1  v2  v3 v4,  则 v4是v3 的后缀 依次次类推
+    void getFail() {//获取失陪边
+        queue<int> que;  
+        for (int c = 0; c < SIGMA_SIZE; ++c) if (tr[0][c])  que.push(tr[0][c]);
+        while (!que.empty()) {
+            int r = que.front(); que.pop();
+            for (int c = 0; c < SIGMA_SIZE; ++c) {
+                int u = tr[r][c];                           
+                if (!u) { tr[r][c] = tr[fail[r]][c]; continue; }  //把所有不存在的边补上 走向失配节点走向的节点
+                que.push(u);                                      //修改后就无法使用字典树 查询某字符串前缀的功能
+                int v = fail[r];
+                while (v && !tr[v][c])  v = fail[v];
+                fail[u] = tr[v][c];
+                last[u] = idx[fail[u]] ? fail[u] : last[fail[u]];
+			}
+		}
+	}
+	void find(char* T) {
+		int n = strlen(T + 1);
+		int j = 0;
+		for (int i = 1; T[i]; ++i) {
+			int c = T[i] - 'a';
+			j = tr[j][c];
+			for (int k = j; k; k = last[k]) {
+        val[k]++;                 //统计节点被引用次数
+				pos[idx[k]].push_back(i); //统计模板串的出现位置
+        cnt[idx[i]]++;            //统计模板串的出现次数
+			}
+		}
+	}
+}
+
+//注意  ：建机时模板串中后面的串会覆盖前面相同的串
+unordered_map<string, int> mp;
+int n;
+char s[N], t[N];
+int main() {
+    scanf("%s", t + 1);
+    AC::init();
+    read(n);
+    rep(i, 1, n) { scanf("%s", s + 1); AC::insert(s, i); }
+    AC::getFail();
+    AC::find(t);
+}
