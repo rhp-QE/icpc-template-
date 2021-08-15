@@ -1,0 +1,86 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace::std;
+
+const int maxn = 2e5 + 7;
+
+int a[maxn];
+int n, m;
+
+//! 与普通线段树不同的是：权值线段树 维护的是整个数组的信息，且其节点表示的是整个数组，值在[L R)内的元素个数
+//！则建立多个树，每个树代表一个数组前缀，则就可以查询到数组的某个区间的信息
+//！许多树共用相同的节点，每加一颗树，在树上只增加了 log 个节点
+
+
+namespace SST {
+	struct node {
+		int ls, rs, sum;
+	};
+	node  tr[(maxn << 5) + 7];
+	int rt[maxn], inx[maxn], len, tot;
+	inline int getid(const int& val) {
+		return lower_bound(inx + 1, inx + len + 1, val) - inx;
+	}
+	//! @brief 对空区间建立权值线段树
+	//! @param l r  该节点对应的值域
+	//! @return 根节点
+	int build(int l, int r) {
+		int root = ++tot;
+		if (l == r) return root;
+		int mid = l + ((r - l) >> 1);
+		tr[root].ls = build(l, mid);
+		tr[root].rs = build(mid + 1, r);
+		return root;
+	}
+
+
+	//! @brief      扩展一位
+	//! @param k    新增的元素的值
+	//! @param l r  该节点对应的值域
+	//! @param root 前缀对应的根节点
+	int update(int k, int l, int r, int root) {
+		int dir = ++tot;
+		tr[dir].ls = tr[root].ls, tr[dir].rs = tr[root].rs;
+		tr[dir].sum = tr[root].sum + 1;
+		if (l == r)  return dir;
+		int mid = l + ((r - l) >> 1);
+		if (k <= mid) tr[dir].ls = update(k, l, mid, tr[dir].ls);
+		else tr[dir].rs = update(k, mid + 1, r, tr[dir].rs);
+		return dir;
+	}
+
+	//u,v 代表不同的树根  从而代表不同的前缀区间
+	int query(int u, int v, int l, int r, int k) {
+		//cout << l<<" "<<r << endl;
+		if (l == r)  return l;
+		int a = tr[tr[u].ls].sum;   //前缀区间 u 的，值在 【l , mid)的元素的个数
+		int b = tr[tr[v].ls].sum;   //前缀区间 v 的  值在【l,  mid) 的元素的个数
+		int mid = l + ((r - l) >> 1);
+		if (k <= b - a) return query(tr[u].ls, tr[v].ls, l, mid, k);
+		else return query(tr[u].rs, tr[v].rs, mid + 1, r, k - b + a);
+	}
+
+	inline void init() {
+		scanf("%d%d", &n, &m);
+		for (int i = 1; i <= n; ++i) scanf("%d", &a[i]);
+		memcpy(inx, a, sizeof(inx));
+		sort(inx + 1, inx + 1 + n);
+		len = unique(inx + 1, inx + 1 + n) - inx - 1;
+		rt[0] = build(1, len);
+		for (int i = 1; i <= n; ++i) rt[i] = update(getid(a[i]), 1, len, rt[i - 1]);
+	}
+}
+void work() {
+	int l, r, k;
+	while (m-- > 0) {
+		scanf("%d%d%d", &l, &r, &k);
+		printf("%d\n", SST::inx[SST::query(SST::rt[l - 1], SST::rt[r], 1, SST::len, k)]);
+	}
+}
+
+int main() {
+	SST::init();
+	work();
+	return 0;
+}
