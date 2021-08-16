@@ -26,16 +26,16 @@ ll d[maxn];
 vector<edge> edges;
 int n, m;
 /*
-* 1£©¿ÉÒÔÅĞ¶Ï´Ó s ³ö·¢ÊÇ·ñ¿ÉÒÔµ½´ï¸º»·
-* 2£©Èç¹û²»µ½´ï¸º»·£º
-*       Çó½â´Ó¶¥µã s ³ö·¢µ½ËùÓĞµãµÄ×î¶Ì¾àÀë
-*       ±ßµÄÈ¨Öµ¿ÉÒÔÎª¸º
-* 3£©Ê±¼ä¸´ÔÓ¶ÈÎª VE
+* 1ï¼‰å¯ä»¥åˆ¤æ–­ä» s å‡ºå‘æ˜¯å¦å¯ä»¥åˆ°è¾¾è´Ÿç¯
+* 2ï¼‰å¦‚æœä¸åˆ°è¾¾è´Ÿç¯ï¼š
+*       æ±‚è§£ä»é¡¶ç‚¹ s å‡ºå‘åˆ°æ‰€æœ‰ç‚¹çš„æœ€çŸ­è·ç¦»
+*       è¾¹çš„æƒå€¼å¯ä»¥ä¸ºè´Ÿ
+* 3ï¼‰æ—¶é—´å¤æ‚åº¦ä¸º VE
 */
 bool short_path(int s) {
 	fill(d, d + 1 + n, inf);
 	d[s] = 0;
-	int c = 0;//¸üĞÂÂÖ´Î£»
+	int c = 0;//æ›´æ–°è½®æ¬¡ï¼›
 	while (true) {
 		++c;
 		bool update = false;
@@ -52,8 +52,8 @@ bool short_path(int s) {
 }
 
 /*
-* 1£©ÅĞ¶ÏÕû¸öÍ¼ÊÇ·ñº¬ÓĞ¸º»·
-* 2£©Ö»ÄÜÅĞ¶ÏÊÇ·ñº¬ÓĞ¸º»·
+* 1ï¼‰åˆ¤æ–­æ•´ä¸ªå›¾æ˜¯å¦å«æœ‰è´Ÿç¯
+* 2ï¼‰åªèƒ½åˆ¤æ–­æ˜¯å¦å«æœ‰è´Ÿç¯
 */
 bool find_negative_loop() {
 	mem(d, 0);
@@ -68,6 +68,51 @@ bool find_negative_loop() {
 	return false;
 }
 
-int main() {
+//-------------------------------------------------------------------------------------------------------
 
+//é˜Ÿåˆ—ä¼˜åŒ–åˆ¤æ–­è´Ÿåœˆ
+const int maxn = 1e5 + 11;
+struct edge {
+    int from, to;
+    ll dist;
+};
+namespace BF {
+    int n, m; //ç‚¹  è¾¹
+    vector<edge> edges;
+    vector<int> G[maxn];
+    bool inq[maxn];
+    int d[maxn], p[maxn], cnt[maxn];
+
+    void addedge(int from, int to, int dist) {
+        edges.push_back(edge{ from,to,dist });
+        G[from].push_back((int)edges.size() - 1);
+    }
+    void init(int k) {
+        n = k; for (int i = 1; i <= n; ++i) G[i].clear();
+        edges.clear();
+    }
+
+    bool negativeC() {
+        queue<int> que;
+        mem(inq, 0); mem(cnt, 0);
+        rep(i, 1, n) { d[i] = 0; inq[i] = true; que.push(i); }
+
+        while (!que.empty()) {
+            int u = que.front(); que.pop();
+            inq[u] = false;
+            for (const int& e_id : G[u]) {
+                const edge& e = edges[e_id];
+                if (d[e.to] > d[e.from] + e.dist) {
+                    d[e.to] = d[e.from] + e.dist;
+                    p[e.to] = e_id;
+                    if (!inq[e.to]) {
+                        que.push(e.to);
+                        inq[e.to] = true;
+                        if (++cnt[e.to] > n) return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
 }
