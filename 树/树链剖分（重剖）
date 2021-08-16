@@ -1,1 +1,84 @@
+#include<iostream>
+#include<vector>
+#include<queue>
+#include<cstring>
+#include<algorithm>
+#include<unordered_map>
+#include<unordered_set>
+#define lowbit(x) x&(-x)
+#define l(o) (o<<1)
+#define r(o) (o<<1)|1
+using namespace std;
+#define rep(i,a,b) for(int i=a;i<=b;i++)
+#define _rep(i,a,b) for(int i=a;i>=b;--i)
+#define mem(a,b) memset(a,b,sizeof(a))
+#define inf 1LL<<60
+typedef long long ll;
+template<class A>void read(A& a) {
+    a = 0; int c = getchar(), f = 0;
+    for (; !isdigit(c); c = getchar()) f |= c == '-';
+    for (; isdigit(c); c = getchar()) a = a * 10 + (c ^ 48);
+    if (f) a = -a;
+}
+template<class A, class ...B>
+void read(A& a, B&...b) { read(a); read(b...); }
+//---------------------------------------------------------------------
+//**************************************************************************
+//所有编号从1开始
 
+int n;//顶点数
+const int maxn = 1e5 + 11;
+vector<int> G[maxn];
+int cnt = 0;
+int dep[maxn];   //节点深度
+int fa[maxn];    //节点 父亲
+int siz[maxn];   //树的节点个数
+int son[maxn];   //重儿子
+int top[maxn];   //重链的顶部节点
+int dfn[maxn];   //节点    ->  dfs 序号
+int rkn[maxn];   //dfs序号 ->  节点
+int last[maxn];  //子树全遍历完后  的cnt
+void dfs1(int v, int p, int d) { // fa  dep  size  son
+    fa[v] = p;  dep[v] = d;  siz[v] = 1;  son[v] = -1;
+    for (const int& x : G[v]) if (x != p) {
+        dfs1(x, v, d + 1);
+        siz[v] += siz[x];
+        if (son[v] == -1 || siz[x] > siz[son[v]]) son[v] = x;
+    }
+}
+
+void dfs2(int v, int t) {       //top  dfn  rkn
+    top[v] = t;
+    dfn[v] = ++cnt;
+    rkn[cnt] = v;
+    if (son[v] == -1) return;
+    dfs2(son[v], t);
+    for (const int& x : G[v])  if (x != fa[v] && x != son[v])  dfs2(x, x);
+    last[v] = cnt;
+}
+
+//*****************************************************
+//求 最近公共祖先
+int lca(int  u, int v) {
+    while (top[u] != top[v]) {
+        if (dep[top[u]] < dep[top[v]]) v = fa[top[v]];
+        else u = fa[top[u]];
+    }
+    if (dep[u] > dep[v])  return v;
+    else return u;
+}
+
+//使用时 要先读取图；
+int main() {
+    read(n);
+    int a, b;
+    rep(i, 1, n-1) {
+        read(a, b);
+        G[a].push_back(b);
+        G[b].push_back(a);
+    }
+    dfs1(1,-1,0); dfs2(1,1);
+    for (int i = 1; i <= n; ++i) cout << rkn[i] << " ";
+    cout << endl;
+    cout << lca(5, 7);
+}
