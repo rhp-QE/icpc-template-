@@ -1,0 +1,49 @@
+#include<iostream>
+#include<vector>
+#include<algorithm>
+using namespace::std;
+
+const int maxn = 2e5 + 7;
+const int maxn_LOG = 35;
+vector<int> G[maxn];
+int root;
+
+int parent[maxn_LOG][maxn];    //向上走k步所到达的节点，超过根标为-1
+int depth[maxn];         //节点的深度
+
+int V;   //节点数
+
+void dfs(int v, int p, int d) {
+	parent[0][v] = p;  depth[v] = d;
+	for (int x : G[v]) if (x != p) {
+		dfs(x, v, d + 1);
+	}
+}
+
+void init(int v) {
+	dfs(root, -1, 0);
+	for (int k = 0; k + 1 < maxn_LOG; ++k) {
+		for (int v = 0; v < V; ++v) {
+			if (parent[k][v] < 0)  parent[k + 1][v] = -1;
+			else parent[k + 1][v] = parent[k][parent[k][v]];
+		}
+	}
+}
+
+int lca(int u, int v) {
+	if (depth[u] > depth[v]) swap(u, v);
+	int ca = depth[v] - depth[u];
+	for (int i = 0; i < maxn_LOG; ++i) {
+		if ((ca >> i) & 1) v = parent[i][v];
+	}
+	if (u == v) return v;
+
+	//倍增
+	for (int k = maxn_LOG - 1; k >= 0; --k) {
+		if (parent[k][v] != parent[k][u]) {
+			v = parent[k][v];
+			u = parent[k][u];
+		}
+	}
+	return parent[0][u];
+}
