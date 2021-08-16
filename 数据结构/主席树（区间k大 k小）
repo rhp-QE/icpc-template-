@@ -13,7 +13,9 @@ int n, m;
 //！则建立多个树，每个树代表一个数组前缀，则就可以查询到数组的某个区间的信息
 //！许多树共用相同的节点，每加一颗树，在树上只增加了 log 个节点
 
-
+//！使用方法
+//! 初始化只需要提供数组 a 和 长度 n, 然后调用 SST::init()  即可。查询  就直接调用 ask1  ask2;
+//! 数组下标从 1 开始
 namespace SST {
 	struct node {
 		int ls, rs, sum;
@@ -51,25 +53,44 @@ namespace SST {
 		return dir;
 	}
 
-	//u,v 代表不同的树根  从而代表不同的前缀区间
-	int query(int u, int v, int l, int r, int k) {
-		//cout << l<<" "<<r << endl;
-		if (l == r)  return l;
-		int a = tr[tr[u].ls].sum;   //前缀区间 u 的，值在 【l , mid)的元素的个数
-		int b = tr[tr[v].ls].sum;   //前缀区间 v 的  值在【l,  mid) 的元素的个数
-		int mid = l + ((r - l) >> 1);
-		if (k <= b - a) return query(tr[u].ls, tr[v].ls, l, mid, k);
-		else return query(tr[u].rs, tr[v].rs, mid + 1, r, k - b + a);
-	}
-
 	inline void init() {
-		scanf("%d%d", &n, &m);
-		for (int i = 1; i <= n; ++i) scanf("%d", &a[i]);
 		memcpy(inx, a, sizeof(inx));
 		sort(inx + 1, inx + 1 + n);
 		len = unique(inx + 1, inx + 1 + n) - inx - 1;
 		rt[0] = build(1, len);
 		for (int i = 1; i <= n; ++i) rt[i] = update(getid(a[i]), 1, len, rt[i - 1]);
+	}
+	
+	//u,v 代表不同的前缀对应的树节点  ，l, r 对应值域范围
+	int query2(int u, int v, int l, int r) {
+		if (ql <= l && r <= qr) return tr[v].sum - tr[u].sum;
+		int mid = l + ((r - l) >> 1);
+		int ans = 0;
+		if (ql <= mid)  ans += query2(tr[u].ls, tr[v].ls, l, mid);
+		if (qr > mid) ans += query2(tr[u].rs, tr[v].rs, mid + 1, r);
+		return ans;
+	}
+
+	//查询某区间 某值域 内元素的个数
+	int ask2(int l, int r, int down, int up) {
+		ql = getid(down), qr = getid(up);
+		return query2(rt[l - 1], rt[r], 1, len);
+	}
+
+	//查询区间 第k小  最终会卡逼到单点
+	int query1(int u, int v, int l, int r, int k) {
+		if (l == r)  return l;
+		int mid = l + ((r - l) >> 1);
+		int pre1 = tr[tr[u].ls].sum; //前缀1 的值在【l,mid】 的元素个数
+		int pre2 = tr[tr[v].ls].sum; //前缀2 的值在【l,mid】 的元素个数
+		if (pre2 - pre1 < k) return query1(tr[u].rs, tr[v].rs, mid + 1, r, k - pre2 + pre1);
+		else return query1(tr[u].ls, tr[v].ls, l, mid, k);
+	}
+
+	//查询区间第k小
+	int ask1(int l, int r, int k) {
+		int ans = query1(rt[l - 1], rt[r], 1, len, k);
+		return inx[ans];
 	}
 }
 void work() {
