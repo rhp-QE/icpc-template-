@@ -1,0 +1,85 @@
+//**************************************************************************
+struct Point;
+typedef Point Vector;
+const double eps = 1e-10;
+struct Point {
+    double x=0.0f, y=0.0f;
+    Point() = default;
+    Point(double x,double y):x(x),y(y){}
+    //****************************************************
+    bool operator<(const Point& rhs) const {
+        return x < rhs.x || (x == rhs.x && y < rhs.y);
+    }
+};
+
+//***********************  定义运算符  **************************************
+Vector operator+(Vector A, Vector B) { return Vector(A.x + B.x, A.y + B.y); }
+Vector operator-(Vector A, Vector B) { return Vector(A.x - B.x, A.y - B.y); }
+Vector operator*(Vector A, double p) { return Vector(A.x * p, A.y * p); }
+Vector operator/(Vector A, double p) { return Vector(A.x / p, A.y / p); }
+int dcmp(double x) { if (fabs(x) < eps) return 0;  return x < 0 ? -1 : 1; }
+bool operator==(const Point& lhs, const Point& rhs) {
+    return dcmp(lhs.x - rhs.x) == 0 && dcmp(lhs.y - rhs.y) == 0;
+}
+bool operator!=(const Point& lhs, const Point& rhs) { return !(lhs == rhs); }
+void read(Point& P) { scanf("%lf%lf", &P.x, &P.y); }
+//-------------------------------------------------------------------------
+
+//************************ 定义基本运算 **************************************
+double Dot(Vector A, Vector B) { return A.x * B.x + A.y * B.y; } //点积
+double Length(Vector A) { return sqrt(Dot(A, A)); }              //向量长度
+double Angle(Vector A, Vector B) { return acos(Dot(A, B) / Length(A) / Length(B)); }//两向量角度
+double Cross(Vector A, Vector B) { return A.x * B.y - A.y * B.x; }//叉积
+double Area2(Point A, Point B, Point C) { return Cross(B - A, C - A); }
+Vector Rotate(Vector A, double rad) { //绕起点旋转
+    return Vector(A.x * cos(rad) - A.y * sin(rad), A.x * sin(rad) + A.y * cos(rad));
+}
+Vector Normal(Vector A) {  //求单位法向量，确保使用前不是零向量
+    double L = Length(A);
+    return Vector(-A.y / L, A.x / L);
+}
+//-------------------------------------------------------------------------
+
+//************************ 点和直线 *****************************************
+//两直线交点
+Point GetLineIntersection(Point P, Vector v, Point Q, Vector w) {
+    Vector u = P - Q;
+    double t = Cross(w, u) / Cross(v, w);
+    return P + v * t;
+}  
+//点到直线的距离
+double DistanceToLine(Point P, Point A, Point B) {
+    Vector v1 = B - A, v2 = P - A;
+    return fabs(Cross(v1, v2) / Length(v1));
+}
+//点到线段的距离
+double DistanceToSegment(Point P, Point A, Point B) {
+    if (A == B) return Length(P - A);
+    Vector v1 = B - A, v2 = P - A, v3 = P - B;
+    if (dcmp(Dot(v1, v2)) < 0)  return Length(v2);
+    else if (dcmp(Dot(v1, v3)) > 0) return Length(v3);
+    else return fabs(Cross(v1, v2)) / Length(v1);
+}
+//点到直线上的投影
+Point GetLineProjection(Point P, Point A, Point B) {
+    Vector v = B - A;
+    return A + v * (Dot(v, P - A) / Dot(v, v));
+}
+//判断线段是否规范相交
+bool SegmentProperIntersection(Point a1, Point a2, Point b1, Point b2) {
+    double c1 = Cross(a2 - a1, b1 - a1), c2 = Cross(a2 - a1, b2 - a1),
+        c3 = Cross(b2 - b1, a1 - b1), c4 = Cross(b2 - b1, a2 - b1);
+    return dcmp(c1) * dcmp(c2) < 0 && dcmp(c3) * dcmp(c4) < 0;
+}
+//判断点是否在线段上
+bool onSegment(Point p, Point a1, Point a2) {
+    return dcmp(Cross(a1 - p, a2 - p)) == 0 && dcmp(Dot(a1 - p, a2 - p)) < 0;
+}
+//多边形面积
+double PloygonArea(Point* p, int n) {
+    double ans = 0;
+    for (int i = 1; i < n - 1; ++i)
+        ans += Cross(p[i] - p[0], p[i + 1] - p[0]);
+    return ans / 2;
+}
+//-------------------------------------------------------------------------
