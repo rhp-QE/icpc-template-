@@ -83,3 +83,114 @@ double PloygonArea(Point* p, int n) {
     return ans / 2;
 }
 //-------------------------------------------------------------------------
+
+//***************************  圆  ****************************************
+struct Circle {
+	Point c;
+	double r;
+	Circle(Point c, double r) :c(c), r(r) {}
+	Point point(double a) {//求以圆心为极角的点
+		return Point(c.x + r * cos(a), c.y + r * sin(a));
+	}  //圆上的点以极角来唯一确定
+};
+
+struct Line {
+	Point p;  Vector v;
+	Line(const Point& p, const Vector& v) :v(v), p(p) {}
+	Point point(double t) { return p + v * t; }
+};
+
+//! @brief 求线圆 交点
+//! @param L      直线  点向式表示
+//! @param C      圆    圆形  半径  表示
+//! @param t1 t2  交点对于直线的参数
+//! @param sol    交点集合
+//! @return       相交情况
+int getLineCircleIntersection(Line L, Circle C, double& t1, double& t2, vector<Point>& sol) {
+	double a = L.v.x, b = L.p.x - C.c.x, c = L.v.y, d = L.p.y - C.c.y;
+	double e = a * a + c * c, f = 2 * (a * b + c * d), g = b * b + d * d - C.r * C.r;
+	double delta = f * f - 4 * e * g;
+	if (dcmp(delta) < 0) return 0;
+	if (dcmp(delta) == 0) {
+		t1 = t2 = -f / (2 * e); sol.push_back(L.point(t1));
+		return 1;
+	}
+	t1 = (-f - sqrt(delta)) / (2 * e); sol.push_back(L.point(t1));
+	t2 = (-f + sqrt(delta)) / (2 * e); sol.push_back(L.point(t2));
+	return 2;
+}
+
+double angle(const Vector& v) { return atan2(v.y, v.x); } //求向量的极角
+
+//! @brief 两园的交点
+//! @param sol  交点集合
+//! @return 交点个数   ，-1 表示两园相等
+int getCircleCircleIntersection(Circle c1, Circle c2, vector<Point>& sol) {
+	double d = Length(c1.c - c2.c);
+	if (dcmp(d) == 0) {
+		if (dcmp(c1.r - c2.r) == 0)  return -1;//两园重合
+		return 0;
+	}
+	if (dcmp(c1.r + c2.r - d) < 0)  return 0;
+	if (dcmp(fabs(c1.r - c2.r) - d) > 0)  return 0;
+
+	double a = angle(c2.c - c1.c);
+	double da = acos((c1.r * c1.r + d * d - c2.r * c2.r) / (2 * c1.r * d));
+
+	Point p1 = c1.point(a - da), p2 = c1.point(a + da);
+
+	sol.push_back(p1);
+	if (p1 == p2)  return 1;
+	sol.push_back(p2);
+	return 2;
+}
+
+//点  园的切线
+int getTangents(const Point& p, const Circle& c, Vector* v) {
+	Vector u = c.c - p;
+	double dist = Length(u);
+	if (dist < c.r)  return 0;
+	else if (dcmp(dist - c.r) == 0) {
+		v[0] = Rotate(u, PI / 2);  return 1;
+	}
+	else {
+		double ang = asin(c.r / dist);
+		v[0] = Rotate(u, -ang);
+		v[1] = Rotate(u, +ang);
+		return 2;
+	}
+}
+
+//两园的切线
+int getTangents(Circle& A, Circle& B, Point* a, Point* b) {
+	int cnt = 0;
+	if (A.r < B.r) { swap(A, B); swap(a, b); }
+	double d2 = (A.c.x - B.c.x) * (A.c.x - B.c.x) + (A.c.y - B.c.y) * (A.c.y - B.c.y);
+	double rdiff = A.r - B.r;
+	double rsum = A.r + B.r;
+	if (d2 < rdiff * rdiff) return 0;
+
+	double base = atan2(B.c.y - A.c.y, B.c.x - A.c.x);
+	//同园
+	if (!dcmp(d2) && !dcmp(A.r - B.r))  return -1;
+	if (!dcmp(d2 - rdiff * rdiff)) {
+		a[cnt] = A.point(base); b[cnt] = B.point(base); cnt++;
+		return 1;
+	}
+	//有外  共切线
+	double ang = acos((A.r - B.r) / sqrt(d2));
+	a[cnt] = A.point(base + ang); b[cnt] = B.point(base + ang); cnt++;
+	a[cnt] = A.point(base - ang); b[cnt] = B.point(base - ang); cnt++;
+	if (!dcmp(d2 - rsum * rsum)) {
+		a[cnt] = A.point(base); b[cnt] = B.point(base + PI); cnt++;
+	}
+	else if (d2 > rsum * rsum) {
+		double ang = acos((A.r + B.r) / sqrt(d2));
+		a[cnt] = A.point(base + ang); b[cnt] = B.point(PI + base + ang); cnt++;
+		a[cnt] = A.point(base - ang); b[cnt] = B.point(PI + base - ang); cnt++;
+	}
+	return cnt;
+}
+//-----------------------------------------------------------------------------
+
+
