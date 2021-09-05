@@ -17,9 +17,9 @@ template<class A, class ...B>
 void read(A& a, B&...b) { read(a); read(b...); }
 //------------------------------------------------------------
 /*
-* 1£©Ïß¶ÎÊ÷Ö»¿ÉÒÔÎ¬»¤¿É¼ÓÀàÐÅÏ¢¡£ËùÎ½¿É¼ÓÀàÐÅÏ¢¾ÍÊÇ´óÇø¼äµÄÐÅÏ¢¿ÉÒÔÓÉÈô¸É×ÓÇø¼äµÄÐÅÏ¢ºÏ²¢µÃµ½£¬±ÈÈçÇø¼äºÍ£¬Çø¼ä×îÐ¡ÖµºÍ
-* Çø¼ä×î´óÖµ¡£
-* 2£©Òª×¢ÒâÀÁ¶è±ê¼ÇµÄÊ¹ÓÃ£¬ÀÁ¶è±ê¼Ç¾ÍÊÇ»¹Ç·×ÓÇø¼äµÄ²Ù×÷¡£µ±ÓÐ¶à¸öÀÁ¶è±ê¼ÇÊ±£¬ÒªÌáÇ°¶¨ÒåºÃÀÁ¶è±ê¼ÇµÄÏÂ·ÅË³Ðò¡£
+* 1ï¼‰çº¿æ®µæ ‘åªå¯ä»¥ç»´æŠ¤å¯åŠ ç±»ä¿¡æ¯ã€‚æ‰€è°“å¯åŠ ç±»ä¿¡æ¯å°±æ˜¯å¤§åŒºé—´çš„ä¿¡æ¯å¯ä»¥ç”±è‹¥å¹²å­åŒºé—´çš„ä¿¡æ¯åˆå¹¶å¾—åˆ°ï¼Œæ¯”å¦‚åŒºé—´å’Œï¼ŒåŒºé—´æœ€å°å€¼å’Œ
+* åŒºé—´æœ€å¤§å€¼ã€‚
+* 2ï¼‰è¦æ³¨æ„æ‡’æƒ°æ ‡è®°çš„ä½¿ç”¨ï¼Œæ‡’æƒ°æ ‡è®°å°±æ˜¯è¿˜æ¬ å­åŒºé—´çš„æ“ä½œã€‚å½“æœ‰å¤šä¸ªæ‡’æƒ°æ ‡è®°æ—¶ï¼Œè¦æå‰å®šä¹‰å¥½æ‡’æƒ°æ ‡è®°çš„ä¸‹æ”¾é¡ºåºã€‚
 */
 const int maxn = 1e5 + 11;
 int ql, qr;
@@ -27,8 +27,8 @@ ll v, md;
 int num[maxn];
 struct node {
 	int l, r;
-	ll sum;              //¶¨ÒåÎ¬»¤ÐÅÏ¢
-	ll opa, opm;         //¶¨ÒåÀÁ¶è±ê¼Ç
+	ll sum;              //å®šä¹‰ç»´æŠ¤ä¿¡æ¯
+	ll opa, opm;         //å®šä¹‰æ‡’æƒ°æ ‡è®°
 };
 node a[maxn*4];
 
@@ -123,3 +123,62 @@ int main() {
 		}
 	}
 }
+
+//------------------------------------------------------------------
+const int maxn = 2e6 + 11;
+int ql, qr;
+ll val, md;
+struct Seg {
+	struct Tr {
+		int l, r;
+		ll sum;
+		ll lazy;
+	}tr[maxn];
+	//! @brief æ‡’æƒ°æ ‡è®°ä¸‹æ”¾éœ€è¦çš„è®¡ç®—
+	void calc(int v) {
+		tr[v].sum += val * (tr[v].r - tr[v].l + 1);
+		tr[v].lazy += val;
+	}
+	void pushup(int v) {
+		tr[v].sum += tr[lv].sum + tr[rv].sum;
+	}
+	void pushdown(int v) {
+		if (tr[v].lazy != 0) {
+			val = tr[v].lazy;  tr[v].lazy = 0;
+			calc(lv);
+			calc(rv);
+		}
+	}
+	void build(int v, int l, int r) {
+		tr[v].sum = tr[v].lazy = 0;
+		tr[v].l = l;  tr[v].r = r;
+		if (l == r)  return;
+		int mid = l + ((r - l) >> 1);
+		build(lv, l, mid);
+		build(rv, mid + 1, r);
+	}
+	void set(int l, int r, int v) {
+		ql = l; qr = r; val = v;
+	}
+	ll query(int v) {
+		if (ql <= tr[v].l && tr[v].r <= qr) return tr[v].sum;
+		pushdown(v);
+		int mid = tr[v].l + ((tr[v].r - tr[v].l) >> 1);
+		ll ans = 0;
+		if (ql <= mid)   ans += query(lv);
+		if (qr > mid)  ans += query(rv);
+		pushup(v);
+		return ans;
+	}
+	void update(int v) {
+		if (ql <= tr[v].l && tr[v].r <= qr) {
+			calc(v);
+			return;
+		}
+		pushdown(v);
+		int mid = tr[v].l + ((tr[v].r - tr[v].l) >> 1);
+		if (ql <= mid) update(lv);
+		if (qr > mid)  update(rv);
+		pushup(v);
+	}
+}s1,s2,s3;
