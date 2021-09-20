@@ -13,7 +13,8 @@ namespace SA {
         return oldrk[x] == oldrk[y] && oldrk[x + w] == oldrk[y + w];
     }
     void build(int m) {
-        int i, p, w;
+        int i, p, w, k;
+        mem(cnt, 0); mem(id, 0);
         for (i = 1; i <= n; ++i) ++cnt[rk[i] = s[i]];
         for (i = 1; i <= m; ++i) cnt[i] += cnt[i - 1];
         for (i = n; i >= 1; --i) sa[cnt[rk[i]]--] = i;
@@ -32,6 +33,13 @@ namespace SA {
                 for (int i = 1; i <= n; ++i) sa[rk[i]] = i;
                 break;
             }
+        }
+        height[1] = 0;
+        for (i = 1, k = 0; i <= n; ++i) {
+            if (k)  k--;
+            int j = sa[rk[i] - 1];
+            while (s[i + k] == s[j + k]) k++;
+            height[rk[i]] = k;
         }
     }
 }
