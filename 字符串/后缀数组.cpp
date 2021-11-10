@@ -8,7 +8,7 @@ using namespace::std;
 const int N = 2e5 + 11;//
 char s[N]; int n;//文本串长度
 namespace SA {
-    int sa[N], rk[N], oldrk[N << 1], id[N], px[N], cnt[N];
+    int sa[N], rk[N], oldrk[N << 1], id[N], px[N], cnt[N],height[N];//和前一个串最长公共前缀
     bool cmp(int x, int y, int w) {
         return oldrk[x] == oldrk[y] && oldrk[x + w] == oldrk[y + w];
     }
