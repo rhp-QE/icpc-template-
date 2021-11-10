@@ -95,6 +95,7 @@ namespace BF {
     bool negativeC() {
         queue<int> que;
         mem(inq, 0); mem(cnt, 0);
+	//求最短路时只需初始化起始点
         rep(i, 1, n) { d[i] = 0; inq[i] = true; que.push(i); }
 
         while (!que.empty()) {
