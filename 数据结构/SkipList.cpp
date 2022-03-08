@@ -43,8 +43,8 @@ class skipList {
 public:
     skipList<_Key, _Val>()
     {
-        tail = new skipNode<_Key, _Val>(INT_MAX, 0, 0);
-        head = new skipNode<_Key, _Val>(0, 0, MX_LEV, tail);
+        tail = new skipNode<_Key, _Val>(_Key(), _Val(), 0);
+        head = new skipNode<_Key, _Val>(_Key(), _Val(), MX_LEV, tail);
         level = len = 0;
     }
     ~skipList<_Key, _Val>()
@@ -102,7 +102,7 @@ bool skipList<_Key, _Val>::find(const _Key& key)
 {
     skipNode<_Key, _Val>* ptr = head;
     for (int i = level; i >= 0; --i) {
-        while (ptr->next[i]->key < key)
+        while (ptr->next[i] != tail && ptr->next[i]->key < key)
             ptr = ptr->next[i];
         path[i] = ptr;
     }
@@ -184,10 +184,4 @@ int test()
     }
     printf("success\n");
     return 1;
-}
-
-int main()
-{
-    test();
-    return 0;
 }
